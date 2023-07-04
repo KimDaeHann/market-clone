@@ -38,8 +38,20 @@ async def get_items():
                        """).fetchall()
     
     
-    return JSONResponse(jsonable_encoder(dict(row) for row in rows)) 
-                                    #각각 정리가 되서 나옴
+    return JSONResponse(jsonable_encoder(dict(row) for row in rows)) #각각 정리가 되서 나옴
+                             
+cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS items (
+	            id INTEGER PRIMARY KEY,
+	            title TEXT NOT NULL,
+	            image BLOB,
+	            Price INTEGER NOT NULL,
+	            description TEXT,
+	            place TEXT NOT NULL,
+	            insertAt INTEGER NOT NULL
+            );
+            """)                             
+                                    
 @app.get('/images/{item_id}')
 async def get_image(item_id):
     cur = con.cursor()
