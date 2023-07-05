@@ -30,7 +30,7 @@ async def create_item(image: UploadFile, #AWAIT 을 썼기에 앞에는 async
 #여기 까지 하면 서버 오류가 나는것을 볼 수 있음 price 같은 경우 int 이기 때문에 ''뺌  VALEUS(X)  VALUES(O)
 
 @app.get ('/items')
-async def get_items():
+def get_items():
     con.row_factory = sqlite3.Row #컬럼명도 가져옴
     cur = con.cursor() #올려주는거
     rows = cur.execute(f"""
@@ -59,6 +59,19 @@ async def get_image(item_id):
                               SELECT image from items WHERE id={item_id}
                               """).fetchone()[0]
     return Response(content=bytes.fromhex(image_bytes),media_type='image/*') #16진법으로 된것을 바꾸겠다
+
+@app.post('/signup')   #회원가입 정보 저장을 위한 테이블을 만듦
+def signup(id:Annotated[str,Form()],
+           password:Annotated[str,Form()],
+           name:Annotated[str,Form()],
+           email:Annotated[str,Form()]):
+    cur.execute(f"""
+                INSERT INTO users(id,name,email,password)
+                VALUES ('{id}','{name}','{email}','{password}')
+                """)
+    con.commit()
+    print (id, password)
+    return '200'
 
 
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
