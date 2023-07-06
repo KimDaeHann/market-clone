@@ -10,6 +10,8 @@ const checkPassword = () => {
   } else return false;
 };
 
+const div = document.querySelector("#info");
+
 const handleSubmit = async (event) => {
   event.preventDefault();
   const formData = new FormData(form);
