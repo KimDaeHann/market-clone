@@ -72,4 +72,4 @@
 <div class="info-bar__time">{hour}:{min}</div>
 info-ba
 
-</style>
+<style></style>
