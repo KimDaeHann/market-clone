@@ -1,28 +1,112 @@
-<script>
+파이어베이스 로그인 
+스크린샷 참고
+등록 하면 구글로그인 사용설정이 됨
+
+파이어베이스에게 우리가 어떤 앱을 만들고 있다는것을 알려줘야됨
+스크린샷 참고
+후
+
+//firebase config 파일은 github에 업로드 하면 안됨
+코드 복사 후 붙여놓기 하면됨
+github에 업로드 하기 싫을때는 .gitnore에 들어가서 .firebase.js 입력 하면 됨
+입력 후 보면 firebass 파일이 흐려진 것을 볼 수 잇다
+
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBtBwPdYYbhIEiYo4oa8uaDMYo5RwdN5NQ",
+  authDomain: "carrot-market-15d7d.firebaseapp.com",
+  databaseURL:
+    "https://carrot-market-15d7d-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "carrot-market-15d7d",
+  storageBucket: "carrot-market-15d7d.appspot.com",
+  messagingSenderId: "373358779849",
+  appId: "1:373358779849:web:b97231bc1be6b019d2dc18",}
+
+  이제 구글 로그인 공식 문서 참고
+  https://firebase.google.com/docs/auth/web/google-signin?hl=ko&authuser=0#handle_the_sign-in_flow_with_the_firebase_sdk
+
+  코드 복사 후 App.svelte에 등록
+  provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+  읽기 전용 이기 때문에 코드 복사후 붙
+
+우리는 로그인 페이지를 먼저 만들어 와야됨 밑 코드 참고
+
+ let login = false;
+{#if !login} //~가 아닐때는 !을 붙임
+  <Login />
+{:else}
+  <Router {routes} />
+{/if}
+그리고 로그인이 되어 있는 상태에서는 로그인이 보여질 필요가 없음
+
+ const routes = {
+    "/": Main,
+    "login": login, <을 지울 수 있음
+    "/signup": Signup,
+    "/write": Write,
+    "*": NotFound,
+  };
+
+구글 로그인 하기 구글 시작하기 누르면 창이 뜨는것 까지 
+  <script>
   import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-  import { user$ } from "../store";
 
   const provider = new GoogleAuthProvider();
   const auth = getAuth();
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = () => {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+        // IdP data available using getAdditionalUserInfo(result)
+        // ...
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        // ...
+      });
+  };
+</script>
+위 문법을 
+ const loginWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const token = credential.accessToken;
       const user = result.user;
-      user$.set(user);
-      localStorage.setItem("token", token);
     } catch (error) {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // The email of the user's account used.
+      const email = error.customData.email;
+      // The AuthCredential type that was used.
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      // ...
       console.error(error);
     }
   };
-</script>
+  이 문법으로 바굼 위 문법으로 통해 이 정보가 있으면 유저를 보여주고 이 정보가 없으면
+  로그인창으로 이동하도록 할 예정 그러면 이 정보를 저장을
+
+앞에 $를 붙여줘야 유저 정보를 얻ㅇ르 수 있음
+  const user = result.user;
+      user$.set(user);
+<div>{$user$}</div>
+
+
 
 <div>
-  <!-- {#if $user$}
-    <div>{$user$.displayName}로그인 됨</div>
-  {/if} -->
   <div>로그인 하기</div>
   <button class="login-btn" on:click={loginWithGoogle}>
     <img
@@ -35,18 +119,15 @@
   </button>
 </div>
 
-<style>
-  .login-btn {
-    width: 200px;
-    height: 50px;
-    border: 1px solid gray;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    border-radius: 3px;
-  }
-  .google-img {
-    width: 20px;
-  }
-</style>
+import { writable } from "svelte/store";
+
+export const user$ = writable(null); //쓸수있는 수정할수있는
+
+
+//앞에 $는 꼭 붙여줘야됨 유저 $는 writable이고 그 값을 가져오려면 
+
+{#if !$user$}
+  <Login />
+{:else}
+  <Router {routes} />
+{/if}
